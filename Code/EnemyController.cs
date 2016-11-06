@@ -8,22 +8,25 @@ public class EnemyController : MonoBehaviour
     //Animator anim; //<- for animation
     public bool isChasingPlayer = true;
     private GameObject self;
-    private GameObject player;
+    static GameObject player;
     private float distance;
     public float reach = 2.5f;
+    private PlayerController playerScript;
+
     // Use this for initialization
     void Start()
     {
         //anim = GetComponent<Animator>();
         player = GameObject.FindGameObjectWithTag("Player");
         self = GameObject.Find(name);
+        playerScript = GameObject.FindObjectOfType(typeof(PlayerController)) as PlayerController;
     }
     // Update is called once per frame
-    void FixedUpdate()
+    void Update()
     {
         Vector2 movement = player.transform.position - transform.position;
         movement.Normalize();
-        movement *= maxSpeed;
+        movement *= maxSpeed * Time.deltaTime;
         //anim.SetFloat("Speed", Mathf.Abs(movement.magnitude)); //<- for movement animation
         distance = Vector2.Distance(self.transform.position, player.transform.position);
         if (isChasingPlayer)
@@ -36,6 +39,7 @@ public class EnemyController : MonoBehaviour
             {
                 //anim.SetBool("attacking", true);
                 isChasingPlayer = false;
+                playerScript.Killed();
             }
         }
         else if (!isChasingPlayer)
@@ -53,6 +57,7 @@ public class EnemyController : MonoBehaviour
         {
             Flip();
         }
+
     }
     void Flip() //for changing facing
     {

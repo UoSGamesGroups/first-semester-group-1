@@ -1,21 +1,30 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     //variables
     public float maxSpeed = 10f;
     bool facingRight = true;
+    public Sprite dead;
+    private SpriteRenderer spriteRenderer;
+    public float jumpForce = 70f;
+    public bool airMovement = true;
+    public KeyCode jumpKey = KeyCode.Space;
+    bool playerAlive = true;
     //Animator anim;
     bool grounded = false;
     public Transform groundCheck;
     float groundRadius = 0.2f;
     public LayerMask whatIsGround;
-    public float jumpForce = 70f;
-    public bool airMovement = true;
-    public KeyCode jumpKey = KeyCode.Space;
     //does this at start
     void Start()
     {
         //anim = GetComponent<Animator>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        if (spriteRenderer.sprite == null)
+        {
+            spriteRenderer.sprite = dead;
+        }
     }
     //does this all the time (does not depend on framerate, less accurate than Update)
     void FixedUpdate()
@@ -24,17 +33,24 @@ public class PlayerController : MonoBehaviour
         //anim.SetBool("Ground", grounded);
         //anim.SetFloat("vSpeed", GetComponent<Rigidbody2D>().velocity.y);
         if (!grounded && airMovement == false) { return; }//<- for disableing movement in air
-        float move = Input.GetAxis("Horizontal");
-        //anim.SetFloat("Speed", Mathf.Abs(move));
-        GetComponent<Rigidbody2D>().velocity = new Vector2(move * maxSpeed, GetComponent<Rigidbody2D>().velocity.y);
-        //changes facing
-        if (move > 0 && !facingRight)
+        if (!playerAlive)
         {
-            Flip();
+            return;
         }
-        else if (move < 0 && facingRight)
+        else if (playerAlive)
         {
-            Flip();
+            float move = Input.GetAxis("Horizontal");
+            //anim.SetFloat("Speed", Mathf.Abs(move));
+            GetComponent<Rigidbody2D>().velocity = new Vector2(move * maxSpeed, GetComponent<Rigidbody2D>().velocity.y);
+            //changes facing
+            if (move > 0 && !facingRight)
+            {
+                Flip();
+            }
+            else if (move < 0 && facingRight)
+            {
+                Flip();
+            }
         }
     }
     //does this all the time (depends on framerate, more accurate than FixedUpdate)
@@ -52,5 +68,14 @@ public class PlayerController : MonoBehaviour
         Vector3 theScale = transform.localScale;
         theScale.x *= -1;
         transform.localScale = theScale;
+    }
+    public void Killed()
+    {
+        spriteRenderer.sprite = dead;
+    }
+
+    public static implicit operator GameObject(PlayerController v)
+    {
+        throw new NotImplementedException();
     }
 }
