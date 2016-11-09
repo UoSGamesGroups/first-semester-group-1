@@ -6,13 +6,14 @@ public class EnemyController : MonoBehaviour
     public float maxSpeed = 2f;
     bool facingRight = true;
     //Animator anim; //<- for animation
-    public bool isChasingPlayer = true;
+    public bool isChasingPlayer = false;
     private GameObject self;
     static GameObject player;
     private float distance;
     public float reach = 2.5f;
     private PlayerController playerScript;
-
+    public float hfov = 10;
+    public float vfov = 5;
     // Use this for initialization
     void Start()
     {
@@ -24,16 +25,31 @@ public class EnemyController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Vector2 movement = player.transform.position - transform.position;
+        Vector2 movement = player.transform.position - self.transform.position;
         movement.Normalize();
         movement *= maxSpeed * Time.deltaTime;
         //anim.SetFloat("Speed", Mathf.Abs(movement.magnitude)); //<- for movement animation
         distance = Vector2.Distance(self.transform.position, player.transform.position);
+        float vDistance = player.transform.position.y - self.transform.position.y;
+        float hDistance = player.transform.position.x - self.transform.position.x;
+        if (vDistance > vfov)
+        {
+            //look up
+        }
+        if (vDistance < -vfov)
+        {
+            //look down
+        }
+        if ((hDistance <= hfov || hDistance >= -hfov) && (vDistance<=vfov||vDistance>=-vfov))
+        {
+            isChasingPlayer = true;
+        }
         if (isChasingPlayer)
         {
-            if (distance > reach) //if out of reach move towards player
+            if (distance > reach) //if out of reach move horizontaly towards player
             {
-                GetComponent<Rigidbody2D>().velocity = new Vector2(movement.x, GetComponent<Rigidbody2D>().velocity.y);
+                Vector2 horizontalMovement = new Vector2(movement.x, GetComponent<Rigidbody2D>().velocity.y);
+                self.GetComponent<Rigidbody2D>().AddForce(horizontalMovement);
             }
             else //if in reach attack player
             {
@@ -57,7 +73,6 @@ public class EnemyController : MonoBehaviour
         {
             Flip();
         }
-
     }
     void Flip() //for changing facing
     {

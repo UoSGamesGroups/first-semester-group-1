@@ -10,7 +10,13 @@ public class PlayerController : MonoBehaviour
     public float jumpForce = 70f;
     public bool airMovement = true;
     public KeyCode jumpKey = KeyCode.Space;
+    bool doubbleJump=false;
+    public bool canDoubbleJump = false;
     bool playerAlive = true;
+    public float o2max = 100;
+    public float o2 = 100;
+    public float o2loss=0.1f;
+    public bool outside = false;
     //Animator anim;
     bool grounded = false;
     public Transform groundCheck;
@@ -29,7 +35,6 @@ public class PlayerController : MonoBehaviour
     //does this all the time (does not depend on framerate, less accurate than Update)
     void FixedUpdate()
     {
-        grounded = Physics2D.OverlapCircle(groundCheck.position, groundRadius, whatIsGround);
         //anim.SetBool("Ground", grounded);
         //anim.SetFloat("vSpeed", GetComponent<Rigidbody2D>().velocity.y);
         if (!grounded && airMovement == false) { return; }//<- for disableing movement in air
@@ -39,6 +44,14 @@ public class PlayerController : MonoBehaviour
         }
         else if (playerAlive)
         {
+            if (outside)
+            {
+                o2 -= o2loss;
+            }
+            if (o2 <= o2max && !outside)
+            {
+                o2++;
+            }
             float move = Input.GetAxis("Horizontal");
             //anim.SetFloat("Speed", Mathf.Abs(move));
             GetComponent<Rigidbody2D>().velocity = new Vector2(move * maxSpeed, GetComponent<Rigidbody2D>().velocity.y);
@@ -52,14 +65,32 @@ public class PlayerController : MonoBehaviour
                 Flip();
             }
         }
+        if (o2 <= 0)
+        {
+            Killed();
+        }
+       
     }
     //does this all the time (depends on framerate, more accurate than FixedUpdate)
     void Update()
     {
+        grounded = Physics2D.OverlapCircle(groundCheck.position, groundRadius, whatIsGround);
+        if (canDoubbleJump && grounded)
+        {
+            doubbleJump = true;
+        }
         if (grounded && Input.GetKeyDown(jumpKey))
         {
             //anim.SetBool("Ground", false);
             GetComponent<Rigidbody2D>().AddForce(new Vector2(0, jumpForce));
+        }
+        if (doubbleJump)
+        {
+            if (Input.GetKeyDown(jumpKey))
+            {
+                GetComponent<Rigidbody2D>().AddForce(new Vector2(0, jumpForce));
+                doubbleJump = false;
+            }
         }
     }
     void Flip() //for changing facing
@@ -71,6 +102,7 @@ public class PlayerController : MonoBehaviour
     }
     public void Killed()
     {
+        playerAlive = false;
         spriteRenderer.sprite = dead;
     }
 
