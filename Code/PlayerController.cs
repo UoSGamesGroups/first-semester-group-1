@@ -10,13 +10,11 @@ public class PlayerController : MonoBehaviour
     public float jumpForce = 70f;
     public bool airMovement = true;
     public KeyCode jumpKey = KeyCode.Space;
-    bool doubbleJump=false;
+    bool doubbleJump = false;
     public bool canDoubbleJump = false;
-    bool playerAlive = true;
-    public float o2max = 100;
-    public float o2 = 100;
-    public float o2loss=0.1f;
-    public bool outside = false;
+    public bool playerAlive = true;
+    static GameObject player;
+    private O2Control o2Script;
     //Animator anim;
     bool grounded = false;
     public Transform groundCheck;
@@ -31,6 +29,8 @@ public class PlayerController : MonoBehaviour
         {
             spriteRenderer.sprite = dead;
         }
+        player = GameObject.Find("Player");
+        o2Script = player.GetComponent<O2Control>();
     }
     //does this all the time (does not depend on framerate, less accurate than Update)
     void FixedUpdate()
@@ -42,34 +42,36 @@ public class PlayerController : MonoBehaviour
         {
             return;
         }
-        else if (playerAlive)
+        float move = Input.GetAxis("Horizontal");
+        //anim.SetFloat("Speed", Mathf.Abs(move));
+        GetComponent<Rigidbody2D>().velocity = new Vector2(move * maxSpeed, GetComponent<Rigidbody2D>().velocity.y);
+        //changes facing
+        if (move > 0 && !facingRight)
         {
-            if (outside)
-            {
-                o2 -= o2loss;
-            }
-            if (o2 <= o2max && !outside)
-            {
-                o2++;
-            }
-            float move = Input.GetAxis("Horizontal");
-            //anim.SetFloat("Speed", Mathf.Abs(move));
-            GetComponent<Rigidbody2D>().velocity = new Vector2(move * maxSpeed, GetComponent<Rigidbody2D>().velocity.y);
-            //changes facing
-            if (move > 0 && !facingRight)
-            {
-                Flip();
-            }
-            else if (move < 0 && facingRight)
-            {
-                Flip();
-            }
+            Flip();
         }
-        if (o2 <= 0)
+        else if (move < 0 && facingRight)
         {
-            Killed();
+            Flip();
         }
-       
+    }
+    void OnTriggerEnter2D(Collider2D col)
+    {
+        if (col.gameObject.tag == "speedUpgrade")
+        {
+            Destroy(col.gameObject);
+            maxSpeed += 5;
+        }
+        if (col.gameObject.tag == "jumpUpgrade")
+        {
+            Destroy(col.gameObject);
+            canDoubbleJump = true;
+        }
+        if (col.gameObject.tag == "o2Upgrade")
+        {
+            Destroy(col.gameObject);
+            player.GetComponent<O2Control>().o2max += 50;
+        }
     }
     //does this all the time (depends on framerate, more accurate than FixedUpdate)
     void Update()
