@@ -14,7 +14,7 @@ public class PlayerController : MonoBehaviour
 	public bool airMovement = true;
 	public KeyCode jumpKey = KeyCode.Space;
 	bool playerAlive = true;
-	//Animator anim;
+	Animator anim;
 	bool grounded = false;
 	public Transform respawn;
 	public Transform groundCheck;
@@ -25,7 +25,7 @@ public class PlayerController : MonoBehaviour
 	//does this at start
 	void Start()
 	{
-		//anim = GetComponent<Animator>();
+		anim = GetComponent<Animator>();
 		spriteRenderer = GetComponent<SpriteRenderer>();
 		if (spriteRenderer.sprite == null)
 		{
@@ -36,8 +36,8 @@ public class PlayerController : MonoBehaviour
 	void FixedUpdate()
 	{
 		grounded = Physics2D.OverlapCircle(groundCheck.position, groundRadius, whatIsGround);
-		//anim.SetBool("Ground", grounded);
-		//anim.SetFloat("vSpeed", GetComponent<Rigidbody2D>().velocity.y);
+		anim.SetBool("Ground", grounded);
+		anim.SetFloat("vSpeed", GetComponent<Rigidbody2D>().velocity.y);
 		if (!grounded && airMovement == false) { return; }//<- for disableing movement in air
 		if (!playerAlive)
 		{
@@ -47,7 +47,7 @@ public class PlayerController : MonoBehaviour
 		{
 			
 			float move = Input.GetAxis("Horizontal");
-			//anim.SetFloat("Speed", Mathf.Abs(move));
+			anim.SetFloat("Speed", Mathf.Abs(move));
 			GetComponent<Rigidbody2D>().velocity = new Vector2(move * maxSpeed, GetComponent<Rigidbody2D>().velocity.y);
 			//changes facing
 			//Debug.Log (move);
@@ -67,7 +67,7 @@ public class PlayerController : MonoBehaviour
 	{
 		if (grounded && Input.GetKeyDown(jumpKey))
 		{
-			//anim.SetBool("Ground", false);
+			anim.SetBool("Ground", false);
 			GetComponent<Rigidbody2D>().AddForce(new Vector2(0, jumpForce));
 		}
 	}
@@ -95,11 +95,5 @@ public class PlayerController : MonoBehaviour
 				SceneManager.LoadScene (level);
 			}
 		}
-	}
-
-
-	public static implicit operator GameObject(PlayerController v)
-	{
-		throw new NotImplementedException();
 	}
 }
